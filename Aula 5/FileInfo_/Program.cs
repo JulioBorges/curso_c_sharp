@@ -31,20 +31,17 @@ namespace FileInfo_
                 string path2 = Path.GetTempFileName();
                 var fi2 = new FileInfo(path2);
 
-                // Ensure that the target does not exist.
                 fi2.Delete();
 
-                // Copy the file.
                 fi1.CopyTo(path2);
-                Console.WriteLine($"{path} was copied to {path2}.");
+                Console.WriteLine($"{path} foi copiado para {path2}.");
 
-                // Delete the newly created file.
                 fi2.Delete();
-                Console.WriteLine($"{path2} was successfully deleted.");
+                Console.WriteLine($"{path2} foi excluído com sucesso.");
             }
             catch (Exception e)
             {
-                Console.WriteLine($"The process failed: {e.ToString()}");
+                Console.WriteLine($"Ocorreu um erro ao processar o arquivo: {e.ToString()}");
             }
         }
     }

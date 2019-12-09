@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 namespace Directory_
 {
@@ -15,8 +16,13 @@ namespace Directory_
 
             foreach (var arquivo in arquivos)
                 Console.WriteLine(arquivo);
+            var arquivosFileSystem = Directory
+                .EnumerateFileSystemEntries(@"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE", "*.*", SearchOption.AllDirectories);
 
-            foreach (var arquivo in Directory.EnumerateFileSystemEntries(@"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE", "*.*", SearchOption.AllDirectories))
+            var qtd = arquivosFileSystem.Count();
+            Console.WriteLine($"Quantidade de arquivos: {qtd}");
+
+            foreach (var arquivo in arquivosFileSystem)
                 Console.WriteLine(arquivo);
 
             Console.Read();

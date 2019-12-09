@@ -9,6 +9,10 @@ namespace Generics
         {
             ImprimirNovoNumero<Dados>(new Dados());
             ImprimirNovoNumero<DadosBinarios>(new DadosBinarios());
+            ImprimirNovoNumero<string>("testes");
+            ImprimirNovoNumero<int>(9);
+
+            ImprimirNovoNumeroComConstrutor<Dados>();
 
             ListaString listaPropria = new ListaString();
             listaPropria.Add("Um");
@@ -22,6 +26,7 @@ namespace Generics
             listaGenerica.Add("Dois");
             listaGenerica.Add("Fim");
             ImprimirListaDeString<List<string>>(listaGenerica);
+           
 
             Console.ReadKey();
         }
@@ -48,7 +53,7 @@ namespace Generics
         }
 
         private static void ImprimirNovoNumeroComConstrutor<T>()
-            where T : new()
+            where T : class, new()
         {
             T dado = new T();
             Console.WriteLine(dado);

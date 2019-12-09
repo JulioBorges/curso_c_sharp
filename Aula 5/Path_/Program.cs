@@ -26,6 +26,9 @@ namespace Path_
                 Console.WriteLine("A string {0} não é um diretório raiz.", path3);
             }
 
+            string novoPath = Path.Combine(path2, "A", "B", "C");
+            Console.WriteLine(novoPath);
+
             Console.WriteLine("O Path completo do arquivo {0} é {1}.", path3, Path.GetFullPath(path3));
             Console.WriteLine("{0} é o diretório temporário do sistema.", Path.GetTempPath());
             Console.WriteLine("{0} é um arquivo temporário pronto para uso.", Path.GetTempFileName());

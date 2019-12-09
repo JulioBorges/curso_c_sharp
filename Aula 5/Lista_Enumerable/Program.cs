@@ -17,6 +17,9 @@ namespace Lista_Enumerable
             };
 
             var filtradoEnum = lista.Where(a => ComecaComJota(a, "enumerable"));
+
+            filtradoEnum = filtradoEnum.Where(a => TerminaComO(a));
+            
             var filtradoLista = lista.Where(a => ComecaComJota(a, "lista")).ToList();
 
             foreach (var itemb in filtradoEnum)
@@ -32,6 +35,11 @@ namespace Lista_Enumerable
         {
             Console.WriteLine($"Filtrando {a} na origem {origem}");
             return a.StartsWith("J");
+        }
+
+        private static bool TerminaComO(string a)
+        {
+            return a.EndsWith("o");
         }
     }
 }

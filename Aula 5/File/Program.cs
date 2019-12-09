@@ -21,6 +21,7 @@ namespace File_
             }
 
             LerArquivo(arquivo);
+            Console.ReadKey();
         }
 
         private static void EscreverArquivo(string arquivo)

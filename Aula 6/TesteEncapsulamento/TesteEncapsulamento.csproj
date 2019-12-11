@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B800DA75-5597-42BA-B0E6-C2FBFE74EC0A}</ProjectGuid>
+    <ProjectGuid>{7CB7405D-6E99-4F66-866E-6BF1E79297D3}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Heranca</RootNamespace>
-    <AssemblyName>Heranca</AssemblyName>
+    <RootNamespace>TesteEncapsulamento</RootNamespace>
+    <AssemblyName>TesteEncapsulamento</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -43,14 +43,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Encapsulamento.cs" />
-    <Compile Include="Pessoa.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Retangulo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Heranca\Heranca.csproj">
+      <Project>{b800da75-5597-42ba-b0e6-c2fbfe74ec0a}</Project>
+      <Name>Heranca</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

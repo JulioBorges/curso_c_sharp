@@ -1,0 +1,79 @@
+public class Usuario : EntidadeBase
+{
+	public string Nome { get; set; }
+	public string Senha { get; set; }
+}
+
+public enum NivelCriticidade
+{
+	Baixa,
+	Media,
+	Alta,
+	Urgente
+}
+
+public class Tarefa : EntidadeBase
+{
+	public string Descricao { get; set; }
+	public bool Concluido { get; set; }
+	public DateTime DataCriacao { get; set; }
+	public NivelCriticidade Criticidade { get; set; }
+	public string Observacao { get; set; }
+	public Usuario Proprietario { get; set; }
+}
+
+public class PrioridadesUsuario : EntidadeBase
+{
+	public Usuario Proprietario { get; set; }
+	public IEnumerable<Tarefa> Tarefas { get; set; }
+}
+
+public class Auditoria : EntidadeBase
+{
+	public Tarefa TarefaAuditada { get; set; }
+	public bool Concluido { get; set; }
+	public Usuario Proprietario { get; set; }
+	public DateTime Data { get; set; }
+}
+
+public class AuditoriaLogin : EntidadeBase
+{
+	public Usuario UsuarioLogado { get; set; }
+	public DateTime Data { get; set; }
+	public bool Logou { get; set; }
+}
+
+public interface IRepositorioLeitura<T> where T : EntidadeBase
+{
+	Task<IEnumerable<T>> Listar();
+
+	Task<IEnumerable<T>> Listar(Expression<Func<T, bool>> filtro);
+
+	Task<T> Primeiro(Guid id);
+
+	IQueryable<T> Query();
+}
+
+public interface IRepositorioGravacao<T> where T : EntidadeBase
+{
+	T Adicionar(T entidade);
+
+	IEnumerable<T> AdicionarLista(IEnumerable<T> listaEntidades);
+
+	void Deletar(Guid id);
+
+	void Deletar(T entidade);
+
+	T Editar(T entidade);
+
+	Task GravarDadosAsincronamente();
+
+	void GravarDadosSincronamente();
+}
+
+public abstract class EntidadeBase
+{
+	public EntidadeBase() => Id = Guid.NewGuid();
+
+	public Guid Id { get; private set; }
+}

@@ -61,3 +61,5 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+curso_c_sharp/ProjetoFinal/TodoProjetoFinal.Api/Scripts/* linguist-vendored

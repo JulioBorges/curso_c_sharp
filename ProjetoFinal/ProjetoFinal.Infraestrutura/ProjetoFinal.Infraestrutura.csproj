@@ -89,6 +89,19 @@
   <ItemGroup>
     <Compile Include="Contrato\IRepositorioGravacao.cs" />
     <Compile Include="Contrato\IRepositorioLeitura.cs" />
+    <Compile Include="Migrations\202001062137082_Versao 1.00.cs" />
+    <Compile Include="Migrations\202001062137082_Versao 1.00.designer.cs">
+      <DependentUpon>202001062137082_Versao 1.00.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202001062202487_Versao 2.00.cs" />
+    <Compile Include="Migrations\202001062202487_Versao 2.00.designer.cs">
+      <DependentUpon>202001062202487_Versao 2.00.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202001062240430_Versao 3.00.cs" />
+    <Compile Include="Migrations\202001062240430_Versao 3.00.designer.cs">
+      <DependentUpon>202001062240430_Versao 3.00.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="ProjetoFinalContexto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -99,8 +112,18 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\202001062137082_Versao 1.00.resx">
+      <DependentUpon>202001062137082_Versao 1.00.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001062202487_Versao 2.00.resx">
+      <DependentUpon>202001062202487_Versao 2.00.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001062240430_Versao 3.00.resx">
+      <DependentUpon>202001062240430_Versao 3.00.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -19,11 +19,32 @@ namespace Teste
 
                 //CrudBasico(contexto, query);
 
-                //var usuarios = GerarUsuariosAleatorios();
+                // var usuarios = GerarUsuariosAleatorios();
 
-                //InserirListaUsuarios(usuarios, contexto);
+                // InserirListaUsuarios(usuarios, contexto);
 
-                PesquisaEspecificaWhere(contexto);
+                // PesquisaEspecificaWhere(contexto);
+
+                //var usuariosTarefas = contexto.Tarefas
+                //    .Include("Proprietario")
+                //    .Select(tarefa => new
+                //    {
+                //        tarefa.Descricao,
+                //        NomeTarefa = tarefa.Proprietario.Nome
+                //    }).ToList();
+
+                var usuariosTarefas = from tarefa in contexto.Tarefas.Include("Proprietario")
+                           where tarefa.Proprietario != null
+                           select new
+                           {
+                               tarefa.Descricao,
+                               NomeTarefa = tarefa.Proprietario.Nome
+                           };
+
+                foreach (var tarefa in usuariosTarefas)
+                {
+                    Console.WriteLine($"{tarefa.Descricao} - {tarefa.NomeTarefa}");
+                }
 
                 Console.Read();
             }

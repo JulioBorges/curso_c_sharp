@@ -1,10 +1,7 @@
 ﻿using ProjetoFinal.Dominio;
 using ProjetoFinal.Infraestrutura;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web.Http;
 using TodoProjetoFinal.Api.Models;
 
@@ -20,11 +17,8 @@ namespace TodoProjetoFinal.Api.Controllers
             _contexto = new ProjetoFinalContexto();
         }
 
-        /// <summary>
-        /// Retornar todos os usuarios
-        /// </summary>
-        /// <returns></returns>
         [HttpGet]
+        [Route("")]
         public IHttpActionResult Get()
         {
             try
@@ -45,11 +39,6 @@ namespace TodoProjetoFinal.Api.Controllers
             }
         }
 
-        /// <summary>
-        /// Retorna um usuário específico
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         [HttpGet]
         [Route("{id}")]
         public IHttpActionResult Get(Guid id)
@@ -73,6 +62,7 @@ namespace TodoProjetoFinal.Api.Controllers
         }
 
         [HttpPost]
+        [Route("")]
         public IHttpActionResult Post([FromBody]Usuario usuario)
         {
             try
@@ -156,6 +146,27 @@ namespace TodoProjetoFinal.Api.Controllers
                 _contexto.SaveChanges();
 
                 return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("{id}/prioridades")]
+        public IHttpActionResult GetPrioridades(Guid idUsuario)
+        {
+            try
+            {
+                var retorno = _contexto.Prioridades
+                    .Include("Proprietario")
+                    .Include("Tarefa")
+                    .AsNoTracking()
+                    .Where(pr => pr.Proprietario.Id == idUsuario)
+                    .Select(pr => pr.Tarefa).ToList();
+
+                return Ok(retorno);
             }
             catch (Exception ex)
             {

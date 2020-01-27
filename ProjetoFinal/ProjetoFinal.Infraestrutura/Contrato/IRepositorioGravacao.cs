@@ -18,6 +18,8 @@ namespace ProjetoFinal.Infraestrutura.Contrato
 
 		T Editar(T entidade);
 
+		T Editar(T entidadeNoBanco, object entidadeNova);
+
 		Task GravarDadosAssincronamente();
 
 		void GravarDadosSincronamente();

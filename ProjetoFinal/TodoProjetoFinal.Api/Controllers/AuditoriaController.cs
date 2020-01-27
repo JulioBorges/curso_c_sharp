@@ -1,33 +1,40 @@
 ﻿using ProjetoFinal.Dominio;
 using ProjetoFinal.Infraestrutura;
+using ProjetoFinal.Infraestrutura.Contrato;
 using System;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Http;
+using TodoProjetoFinal.Api.ServicesLocator;
 
 namespace TodoProjetoFinal.Api.Controllers
 {
     [RoutePrefix("api/tarefa/auditoria")]
     public class AuditoriaController : ApiController
     {
-        private readonly ProjetoFinalContexto _contexto;
+        private readonly IRepositorioLeitura<Auditoria> _repositorioLeitura;
+        private readonly IRepositorioGravacao<Auditoria> _repositorioGravacao;
 
+        // Aqui usaria injeção de dependencia
         public AuditoriaController()
         {
-            _contexto = new ProjetoFinalContexto();
+            // Pattern ServiceLocator
+            _repositorioLeitura = ServiceLocatorRepositorio
+                .InstanciarRepositorioLeitura<Auditoria>();
+            
+            _repositorioGravacao = ServiceLocatorRepositorio
+                .InstanciarRepositorioGravacao<Auditoria>();
         }
 
         [HttpGet]
         [Route("{id}")]
-        public IHttpActionResult Get(Guid id)
+        public async Task<IHttpActionResult> Get(Guid id)
         {
             try
             {
-                var retorno = _contexto.Tarefas
-                    .Include("TarefaAuditada")
-                    .Include("Proprietario")
-                    .AsNoTracking()
-                    .FirstOrDefault(o => o.Id == id);
+                var retorno = await _repositorioLeitura
+                    .Primeiro(id, true, "TarefaAuditada", "Proprietario");
 
                 return Ok(retorno);
             }
@@ -38,29 +45,28 @@ namespace TodoProjetoFinal.Api.Controllers
         }
 
         [HttpPost]
-        public IHttpActionResult Post([FromBody]Auditoria auditoria)
+        public async Task<IHttpActionResult> Post([FromBody]Auditoria auditoria)
         {
             try
             {
-                var auditoriaNoBanco = _contexto.Auditoria
-                    .Include("Proprietario")
-                    .Include("TarefaAuditada")
-                    .FirstOrDefault(audit => audit.Proprietario.Id == auditoria.Proprietario.Id &&
+                var auditoriaNoBanco = await _repositorioLeitura
+                    .Primeiro(audit => audit.Proprietario.Id == auditoria.Proprietario.Id &&
                                     audit.TarefaAuditada.Id == auditoria.TarefaAuditada.Id &&
-                                    audit.Concluido);
+                                    audit.Concluido, false, "Proprietario", "TarefaAuditada");
 
                 if (auditoriaNoBanco != null)
                 {
                     auditoriaNoBanco.Concluido = auditoria.Concluido;
-                    _contexto.Entry(auditoria).State = EntityState.Modified;
+                    auditoria = _repositorioGravacao.Editar(auditoriaNoBanco);
                 }
                 else
                 {
-                    _contexto.Auditoria.Add(auditoria);
+                    auditoria = _repositorioGravacao.Adicionar(auditoria);
                 }
 
-                _contexto.SaveChanges();
-                return Ok();
+                await _repositorioGravacao.GravarDadosAssincronamente();
+                
+                return Ok(auditoria);
             }
             catch (Exception ex)
             {

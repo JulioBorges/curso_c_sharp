@@ -1,6 +1,4 @@
-﻿using ProjetoFinal.Dominio;
-using ProjetoFinal.Dominio.Contrato;
-using ProjetoFinal.Infraestrutura;
+﻿using ProjetoFinal.Dominio.Contrato;
 using ProjetoFinal.Infraestrutura.Contrato;
 using System;
 using System.Collections.Generic;
@@ -17,34 +15,27 @@ namespace ProjetoFinal.Data.Repositorio
     {
         private readonly DbContext _contexto;
 
-        public RepositorioLeituraEF(DbContext contexto)
-        {
+        public RepositorioLeituraEF(DbContext contexto) =>
             _contexto = contexto;
-        }
 
-        public async Task<IEnumerable<T>> Listar(bool readOnly = false, params string[] includes)
-        {
-            return await Query(readOnly, includes).ToListAsync();
-        }
+        public async Task<IEnumerable<T>> Listar(bool readOnly = false, params string[] includes) =>
+            await Query(readOnly, includes).ToListAsync();
 
-        public async Task<IEnumerable<T>> Listar(Expression<Func<T, bool>> filtro, bool readOnly = false, params string[] includes)
-        {
-            return await Query(readOnly, includes)
+        public async Task<IEnumerable<T>> Listar(Expression<Func<T, bool>> filtro, bool readOnly = false, params string[] includes) =>
+            await Query(readOnly, includes)
                 .Where(filtro)
                 .ToListAsync();
-        }
 
-        public async Task<T> Primeiro(Guid id, bool readOnly = false, params string[] includes)
-        {
-            return await Query(readOnly, includes)
+        public async Task<bool> Existe(Expression<Func<T, bool>> filtro, params string[] includes) =>
+            await Query(true, includes).AnyAsync(filtro);
+
+        public async Task<T> Primeiro(Guid id, bool readOnly = false, params string[] includes) =>
+            await Query(readOnly, includes)
                 .FirstOrDefaultAsync(o => o.Id == id);
-        }
 
-        public async Task<T> Primeiro(Expression<Func<T, bool>> filtro, bool readOnly = false, params string[] includes)
-        {
-            return await Query(readOnly, includes)
+        public async Task<T> Primeiro(Expression<Func<T, bool>> filtro, bool readOnly = false, params string[] includes) =>
+            await Query(readOnly, includes)
                 .FirstOrDefaultAsync(filtro);
-        }
 
         public IQueryable<T> Query(bool readOnly = false, params string[] includes)
         {

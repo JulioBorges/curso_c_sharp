@@ -5,23 +5,25 @@ using System.Threading.Tasks;
 
 namespace ProjetoFinal.Infraestrutura.Contrato
 {
-	public interface IRepositorioGravacao<T> 
-		where T : EntidadeBase
-	{
-		T Adicionar(T entidade);
+    public interface IRepositorioGravacao<T>
+        where T : EntidadeBase
+    {
+        T Adicionar(T entidade);
 
-		IEnumerable<T> AdicionarLista(IEnumerable<T> listaEntidades);
+        IEnumerable<T> AdicionarLista(IEnumerable<T> listaEntidades);
 
-		void Deletar(Guid id);
+        void Deletar(Guid id);
 
-		void Deletar(T entidade);
+        void Deletar(T entidade);
 
-		T Editar(T entidade);
+        void DeletarLista(IEnumerable<T> entidades);
 
-		T Editar(T entidadeNoBanco, object entidadeNova);
+        T Editar(T entidade);
 
-		Task GravarDadosAssincronamente();
+        T Editar(T entidadeNoBanco, object entidadeNova);
 
-		void GravarDadosSincronamente();
-	}
+        Task GravarDadosAssincronamente();
+
+        void GravarDadosSincronamente();
+    }
 }

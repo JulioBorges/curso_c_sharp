@@ -1,29 +1,50 @@
 ﻿using ProjetoFinal.Dominio;
-using ProjetoFinal.Infraestrutura;
+using ProjetoFinal.Infraestrutura.Contrato;
 using System;
+using System.Data.Entity;
 using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 using System.Web.Http;
 using TodoProjetoFinal.Api.Models;
+using TodoProjetoFinal.Api.ServicesLocator;
 
 namespace TodoProjetoFinal.Api.Controllers
 {
     [RoutePrefix("api/usuario")]
     public class UsuarioController : ApiController
     {
-        private readonly ProjetoFinalContexto _contexto;
+        private readonly IRepositorioLeitura<Usuario> _repositorioLeitura;
+        private readonly IRepositorioGravacao<Usuario> _repositorioGravacao;
+        private readonly IRepositorioLeitura<Tarefa> _repositorioLeituraTarefas;
+        private readonly IRepositorioGravacao<Tarefa> _repositorioGravacaoTarefas;
+        private readonly IRepositorioLeitura<PrioridadesUsuario> _repositorioLeituraPrioridades;
 
         public UsuarioController()
         {
-            _contexto = new ProjetoFinalContexto();
+            _repositorioLeitura = ServiceLocatorRepositorio
+                .InstanciarRepositorioLeitura<Usuario>();
+
+            _repositorioGravacao = ServiceLocatorRepositorio
+                .InstanciarRepositorioGravacao<Usuario>();
+
+            _repositorioLeituraTarefas = ServiceLocatorRepositorio
+               .InstanciarRepositorioLeitura<Tarefa>();
+
+            _repositorioGravacaoTarefas = ServiceLocatorRepositorio
+                .InstanciarRepositorioGravacao<Tarefa>();
+
+            _repositorioLeituraPrioridades = ServiceLocatorRepositorio
+               .InstanciarRepositorioLeitura<PrioridadesUsuario>();
         }
 
         [HttpGet]
         [Route("")]
-        public IHttpActionResult Get()
+        public async Task<IHttpActionResult> Get()
         {
             try
             {
-                var retorno = _contexto.Usuarios.AsNoTracking()
+                var retorno = (await _repositorioLeitura.Listar(true))
                         .Select(o => new UsuarioDTO
                         {
                             Id = o.Id,
@@ -41,19 +62,23 @@ namespace TodoProjetoFinal.Api.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        public IHttpActionResult Get(Guid id)
+        public async Task<IHttpActionResult> Get(Guid id)
         {
             try
             {
-                return Ok(_contexto.Usuarios
-                    .AsNoTracking()
+                var usuario = await _repositorioLeitura.Query(true)
                     .Select(o => new UsuarioDTO
                     {
                         Id = o.Id,
                         Nome = o.Nome,
                         Conectado = o.Conectado
                     })
-                    .FirstOrDefault(o => o.Id == id));
+                    .FirstOrDefaultAsync(o => o.Id == id);
+
+                if (usuario == null)
+                    return StatusCode(HttpStatusCode.NoContent);
+
+                return Ok(usuario);
             }
             catch (Exception ex)
             {
@@ -63,18 +88,18 @@ namespace TodoProjetoFinal.Api.Controllers
 
         [HttpPost]
         [Route("")]
-        public IHttpActionResult Post([FromBody]Usuario usuario)
+        public async Task<IHttpActionResult> Post([FromBody]Usuario usuario)
         {
             try
             {
-                var usuarioExiste = _contexto.Usuarios.AsNoTracking()
-                        .Any(o => o.Nome == usuario.Nome);
+                var usuarioExiste = await _repositorioLeitura.Existe(filtro: o => o.Nome == usuario.Nome);
 
                 if (usuarioExiste)
                     return Conflict();
 
-                _contexto.Usuarios.Add(usuario);
-                _contexto.SaveChanges();
+                _repositorioGravacao.Adicionar(usuario);
+                await _repositorioGravacao.GravarDadosAssincronamente();
+
                 return Ok();
             }
             catch (Exception ex)
@@ -103,20 +128,17 @@ namespace TodoProjetoFinal.Api.Controllers
 
         [HttpPut]
         [Route("{id}")]
-        public IHttpActionResult Put(Guid id, [FromBody]UsuarioDTO usuario)
+        public async Task<IHttpActionResult> Put(Guid id, [FromBody]UsuarioDTO usuario)
         {
             try
             {
-                var usuarioNoBanco = _contexto.Usuarios
-                        .FirstOrDefault(u => u.Id == id);
+                var usuarioNoBanco = await _repositorioLeitura.Primeiro(id, false);
 
                 if (usuarioNoBanco == null)
-                    return NotFound();
+                    return StatusCode(HttpStatusCode.NoContent);
 
-                _contexto.Entry(usuarioNoBanco).CurrentValues
-                    .SetValues(usuario);
-
-                _contexto.SaveChanges();
+                _repositorioGravacao.Editar(usuarioNoBanco, usuario);
+                await _repositorioGravacao.GravarDadosAssincronamente();
 
                 return Ok();
             }
@@ -128,22 +150,23 @@ namespace TodoProjetoFinal.Api.Controllers
 
         [HttpDelete]
         [Route("{id}")]
-        public IHttpActionResult Delete(Guid id)
+        public async Task<IHttpActionResult> Delete(Guid id)
         {
             try
             {
-                var usuarioNoBanco = _contexto.Usuarios
-                        .FirstOrDefault(u => u.Id == id);
+                var usuarioNoBanco = await _repositorioLeitura.Primeiro(id);
 
                 if (usuarioNoBanco == null)
-                    return NotFound();
+                    return StatusCode(HttpStatusCode.NoContent);
 
-                var tarefas = _contexto.Tarefas.Where(t => t.Proprietario.Id == id);
+                var tarefas = await _repositorioLeituraTarefas
+                    .Listar(filtro: t => t.Proprietario.Id == id);
 
-                _contexto.Tarefas.RemoveRange(tarefas);
-                _contexto.Usuarios.Remove(usuarioNoBanco);
+                _repositorioGravacaoTarefas.DeletarLista(tarefas);
+                _repositorioGravacao.Deletar(usuarioNoBanco);
 
-                _contexto.SaveChanges();
+                await _repositorioGravacaoTarefas.GravarDadosAssincronamente();
+                await _repositorioGravacao.GravarDadosAssincronamente();
 
                 return Ok();
             }
@@ -155,15 +178,12 @@ namespace TodoProjetoFinal.Api.Controllers
 
         [HttpGet]
         [Route("{id}/prioridades")]
-        public IHttpActionResult GetPrioridades(Guid idUsuario)
+        public async Task<IHttpActionResult> GetPrioridades(Guid idUsuario)
         {
             try
             {
-                var retorno = _contexto.Prioridades
-                    .Include("Proprietario")
-                    .Include("Tarefa")
-                    .AsNoTracking()
-                    .Where(pr => pr.Proprietario.Id == idUsuario)
+                var retorno = (await _repositorioLeituraPrioridades
+                    .Listar(filtro: pr => pr.Proprietario.Id == idUsuario, true, new[] { "Proprietario", "Tarefa" }))
                     .Select(pr => pr.Tarefa).ToList();
 
                 return Ok(retorno);

@@ -3,8 +3,6 @@ using ProjetoFinal.Infraestrutura.Contrato;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ProjetoFinal.Data.Repositorio
@@ -40,12 +38,18 @@ namespace ProjetoFinal.Data.Repositorio
             _contexto.Set<T>().Remove(entidade);
         }
 
+        public void DeletarLista(IEnumerable<T> entidades)
+        {
+            _contexto.Set<T>().RemoveRange(entidades);
+        }
+
         public T Editar(T entidade)
         {
             _contexto.Entry(entidade).State = EntityState.Modified;
 
             return _contexto.Entry(entidade).Entity;
         }
+
         public T Editar(T entidadeNoBanco, object entidadeNova)
         {
             _contexto.Entry(entidadeNoBanco)

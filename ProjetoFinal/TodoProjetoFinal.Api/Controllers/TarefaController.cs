@@ -1,31 +1,39 @@
 ﻿using ProjetoFinal.Dominio;
-using ProjetoFinal.Infraestrutura;
+using ProjetoFinal.Infraestrutura.Contrato;
 using System;
-using System.Data.Entity;
-using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 using System.Web.Http;
+using TodoProjetoFinal.Api.ServicesLocator;
 
 namespace TodoProjetoFinal.Api.Controllers
 {
     [RoutePrefix("api/tarefa")]
     public class TarefaController : ApiController
     {
-        private readonly ProjetoFinalContexto _contexto;
+        private readonly IRepositorioLeitura<Tarefa> _repositorioLeitura;
+        private readonly IRepositorioLeitura<Auditoria> _repositorioLeituraAuditoria;
+        private readonly IRepositorioGravacao<Tarefa> _repositorioGravacao;
 
         public TarefaController()
         {
-            _contexto = new ProjetoFinalContexto();
+            _repositorioLeitura = ServiceLocatorRepositorio
+                .InstanciarRepositorioLeitura<Tarefa>();
+
+            _repositorioGravacao = ServiceLocatorRepositorio
+                .InstanciarRepositorioGravacao<Tarefa>();
+
+            _repositorioLeituraAuditoria = ServiceLocatorRepositorio
+                .InstanciarRepositorioLeitura<Auditoria>();
         }
 
         [HttpGet]
         [Route("")]
-        public IHttpActionResult Get()
+        public async Task<IHttpActionResult> Get()
         {
             try
             {
-                var retorno = _contexto.Tarefas
-                    .Include("Proprietario")
-                    .AsNoTracking();
+                var retorno = await _repositorioLeitura.Listar(true, "Proprietario");
 
                 return Ok(retorno);
             }
@@ -37,13 +45,11 @@ namespace TodoProjetoFinal.Api.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        public IHttpActionResult Get(Guid id)
+        public async Task<IHttpActionResult> Get(Guid id)
         {
             try
             {
-                var retorno = _contexto.Tarefas
-                    .AsNoTracking()
-                    .FirstOrDefault(tarefa => tarefa.Id == id);
+                var retorno = await _repositorioLeitura.Primeiro(id, true);
 
                 return Ok(retorno);
             }
@@ -55,14 +61,12 @@ namespace TodoProjetoFinal.Api.Controllers
 
         [HttpGet]
         [Route("{id}/Auditoria")]
-        public IHttpActionResult GetAuditoria(Guid id)
+        public async Task<IHttpActionResult> GetAuditoria(Guid id)
         {
             try
             {
-                var retorno = _contexto.Auditoria
-                    .Include("TarefaAuditada")
-                    .AsNoTracking()
-                    .Where(tarefa => tarefa.TarefaAuditada.Id == id);
+                var retorno = await _repositorioLeituraAuditoria
+                    .Listar(tarefa => tarefa.TarefaAuditada.Id == id, true, "TarefaAuditada");
 
                 return Ok(retorno);
             }
@@ -73,18 +77,17 @@ namespace TodoProjetoFinal.Api.Controllers
         }
 
         [HttpPost]
-        public IHttpActionResult Post([FromBody]Tarefa tarefa)
+        public async Task<IHttpActionResult> Post([FromBody]Tarefa tarefa)
         {
             try
             {
-                var tarefaExiste = _contexto.Tarefas.AsNoTracking()
-                        .Any(o => o.Id == tarefa.Id);
+                var tarefaExiste = await _repositorioLeitura.Existe(o => o.Id == tarefa.Id);
 
                 if (tarefaExiste)
                     return Conflict();
 
-                _contexto.Tarefas.Add(tarefa);
-                _contexto.SaveChanges();
+                _repositorioGravacao.Adicionar(tarefa);
+                await _repositorioGravacao.GravarDadosAssincronamente();
                 return Ok();
             }
             catch (Exception ex)
@@ -95,20 +98,17 @@ namespace TodoProjetoFinal.Api.Controllers
 
         [HttpPut]
         [Route("{id}")]
-        public IHttpActionResult Put(Guid id, [FromBody]Tarefa tarefa)
+        public async Task<IHttpActionResult> Put(Guid id, [FromBody]Tarefa tarefa)
         {
             try
             {
-                var tarefaNoBanco = _contexto.Tarefas
-                        .FirstOrDefault(t => t.Id == id);
+                var tarefaNoBanco = await _repositorioLeitura.Primeiro(id);
 
                 if (tarefaNoBanco == null)
-                    return NotFound();
+                    return StatusCode(HttpStatusCode.NoContent);
 
-                _contexto.Entry(tarefaNoBanco).CurrentValues
-                    .SetValues(tarefa);
-
-                _contexto.SaveChanges();
+                _repositorioGravacao.Editar(tarefaNoBanco, tarefa);
+                await _repositorioGravacao.GravarDadosAssincronamente();
 
                 return Ok();
             }
@@ -120,20 +120,18 @@ namespace TodoProjetoFinal.Api.Controllers
 
         [HttpPatch]
         [Route("{id}/alterarConclusao/{concluido}")]
-        public IHttpActionResult Patch(Guid id, bool concluido)
+        public async Task<IHttpActionResult> Patch(Guid id, bool concluido)
         {
             try
             {
-                var tarefaNoBanco = _contexto.Tarefas
-                        .FirstOrDefault(t => t.Id == id);
+                var tarefaNoBanco = await _repositorioLeitura.Primeiro(id);
 
                 if (tarefaNoBanco == null)
-                    return NotFound();
+                    return StatusCode(HttpStatusCode.NoContent);
 
                 tarefaNoBanco.Concluido = concluido;
-                _contexto.Entry(tarefaNoBanco).State = EntityState.Modified;
-
-                _contexto.SaveChanges();
+                _repositorioGravacao.Editar(tarefaNoBanco);
+                await _repositorioGravacao.GravarDadosAssincronamente();
 
                 return Ok();
             }
@@ -145,20 +143,17 @@ namespace TodoProjetoFinal.Api.Controllers
 
         [HttpDelete]
         [Route("{id}")]
-        public IHttpActionResult Delete(Guid id)
+        public async Task<IHttpActionResult> Delete(Guid id)
         {
             try
             {
-                var tarefaNoBanco = _contexto.Tarefas
-                        .FirstOrDefault(u => u.Id == id);
+                var tarefaNoBanco = await _repositorioLeitura.Primeiro(id);
 
                 if (tarefaNoBanco == null)
-                    return NotFound();
+                    return StatusCode(HttpStatusCode.NoContent);
 
-                _contexto.Tarefas.Remove(tarefaNoBanco);
-
-                _contexto.SaveChanges();
-
+                _repositorioGravacao.Deletar(tarefaNoBanco);
+                await _repositorioGravacao.GravarDadosAssincronamente();
                 return Ok();
             }
             catch (Exception ex)

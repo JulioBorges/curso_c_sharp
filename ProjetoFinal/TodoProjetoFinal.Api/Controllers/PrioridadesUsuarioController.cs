@@ -1,44 +1,49 @@
 ﻿using ProjetoFinal.Dominio;
-using ProjetoFinal.Infraestrutura;
+using ProjetoFinal.Infraestrutura.Contrato;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Http;
 using TodoProjetoFinal.Api.Models;
+using TodoProjetoFinal.Api.ServicesLocator;
 
 namespace TodoProjetoFinal.Api.Controllers
 {
     [RoutePrefix("api/usuario/prioridade")]
     public class PrioridadesUsuarioController : ApiController
     {
-        private readonly ProjetoFinalContexto _contexto;
+        private readonly IRepositorioLeitura<PrioridadesUsuario> _repositorioLeitura;
+        private readonly IRepositorioGravacao<PrioridadesUsuario> _repositorioGravacao;
 
+        // Aqui usaria injeção de dependencia
         public PrioridadesUsuarioController()
         {
-            _contexto = new ProjetoFinalContexto();
+            // Pattern ServiceLocator
+            _repositorioLeitura = ServiceLocatorRepositorio
+                .InstanciarRepositorioLeitura<PrioridadesUsuario>();
+
+            _repositorioGravacao = ServiceLocatorRepositorio
+                .InstanciarRepositorioGravacao<PrioridadesUsuario>();
         }
 
         [HttpPost]
-        public IHttpActionResult Post([FromBody]PrioridadeTarefaDTO prioridadeTarefa)
+        public async Task<IHttpActionResult> Post([FromBody]PrioridadeTarefaDTO prioridadeTarefa)
         {
             try
             {
-                var existePrioridade = _contexto.Prioridades
-                    .Include("Proprietario")
-                    .Include("Tarefa")
-                    .AsNoTracking()
-                    .Any(o => o.Proprietario.Id == prioridadeTarefa.IdProprietario &&
-                                o.Tarefa.Id == prioridadeTarefa.IdTarefa);
+                var existePrioridade = await _repositorioLeitura.Existe(o => o.Proprietario.Id == prioridadeTarefa.IdProprietario &&
+                                o.Tarefa.Id == prioridadeTarefa.IdTarefa, "Proprietario", "Tarefa");
 
                 if (existePrioridade)
                     return Ok();
 
-                _contexto.Prioridades.Add(new PrioridadesUsuario
+                _repositorioGravacao.Adicionar(new PrioridadesUsuario
                 {
                     IdProprietario = prioridadeTarefa.IdProprietario,
                     IdTarefa = prioridadeTarefa.IdTarefa
                 });
 
-                _contexto.SaveChanges();
+                await _repositorioGravacao.GravarDadosAssincronamente();
                 return Ok();
             }
             catch (Exception ex)
@@ -48,22 +53,20 @@ namespace TodoProjetoFinal.Api.Controllers
         }
 
         [HttpDelete]
-        public IHttpActionResult Delete([FromBody]PrioridadeTarefaDTO prioridadeTarefa)
+        public async Task<IHttpActionResult> Delete([FromBody]PrioridadeTarefaDTO prioridadeTarefa)
         {
             try
             {
-                var prioridade = _contexto.Prioridades
-                    .Include("Proprietario")
-                    .Include("Tarefa")
-                    .Where(o => o.Proprietario.Id == prioridadeTarefa.IdProprietario &&
-                                o.Tarefa.Id == prioridadeTarefa.IdTarefa);
+                var prioridades = await _repositorioLeitura
+                    .Listar(filtro: o => o.Proprietario.Id == prioridadeTarefa.IdProprietario &&
+                                o.Tarefa.Id == prioridadeTarefa.IdTarefa, includes: new[] { "Proprietario", "Tarefa" });
 
-                if (prioridade == null)
+                if (!prioridades.Any())
                     return Ok();
 
-                _contexto.Prioridades.RemoveRange(prioridade);
+                _repositorioGravacao.DeletarLista(prioridades);
 
-                _contexto.SaveChanges();
+                await _repositorioGravacao.GravarDadosAssincronamente();
                 return Ok();
             }
             catch (Exception ex)

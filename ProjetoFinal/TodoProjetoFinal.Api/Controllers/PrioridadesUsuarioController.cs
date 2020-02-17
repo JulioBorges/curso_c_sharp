@@ -1,5 +1,5 @@
 ﻿using ProjetoFinal.Dominio;
-using ProjetoFinal.Infraestrutura.Contrato;
+using ProjetoFinal.Core.Contrato;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

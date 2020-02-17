@@ -1,11 +1,11 @@
-﻿using ProjetoFinal.Dominio.Contrato;
+﻿using ProjetoFinal.Core.Contrato;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace ProjetoFinal.Infraestrutura.Contrato
+namespace ProjetoFinal.Core.Contrato
 {
     public interface IRepositorioLeitura<T>
         where T : EntidadeBase

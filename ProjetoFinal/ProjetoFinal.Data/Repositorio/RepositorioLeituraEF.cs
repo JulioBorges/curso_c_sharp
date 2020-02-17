@@ -1,5 +1,5 @@
-﻿using ProjetoFinal.Dominio.Contrato;
-using ProjetoFinal.Infraestrutura.Contrato;
+﻿using ProjetoFinal.Core.Contrato;
+using ProjetoFinal.Core.Contrato;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;

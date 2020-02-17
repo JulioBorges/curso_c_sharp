@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ProjetoFinal.Dominio.Contrato
+namespace ProjetoFinal.Core.Contrato
 {
 	public abstract class EntidadeBase
 	{

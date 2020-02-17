@@ -87,8 +87,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Contrato\IRepositorioGravacao.cs" />
-    <Compile Include="Contrato\IRepositorioLeitura.cs" />
     <Compile Include="Migrations\202001062137082_Versao 1.00.cs" />
     <Compile Include="Migrations\202001062137082_Versao 1.00.designer.cs">
       <DependentUpon>202001062137082_Versao 1.00.cs</DependentUpon>

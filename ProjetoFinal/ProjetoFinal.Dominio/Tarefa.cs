@@ -1,4 +1,4 @@
-﻿using ProjetoFinal.Dominio.Contrato;
+﻿using ProjetoFinal.Core.Contrato;
 using ProjetoFinal.Dominio.Enums;
 using System;
 using System.ComponentModel.DataAnnotations;

@@ -1,9 +1,8 @@
-﻿using ProjetoFinal.Dominio.Contrato;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace ProjetoFinal.Infraestrutura.Contrato
+namespace ProjetoFinal.Core.Contrato
 {
     public interface IRepositorioGravacao<T>
         where T : EntidadeBase

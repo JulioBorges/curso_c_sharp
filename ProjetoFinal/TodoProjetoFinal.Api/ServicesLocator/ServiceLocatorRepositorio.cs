@@ -1,6 +1,6 @@
 ﻿using ProjetoFinal.Data.Repositorio;
-using ProjetoFinal.Dominio.Contrato;
-using ProjetoFinal.Infraestrutura.Contrato;
+using ProjetoFinal.Core.Contrato;
+using ProjetoFinal.Core.Contrato;
 
 namespace TodoProjetoFinal.Api.ServicesLocator
 {
